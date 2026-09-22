@@ -1,4 +1,5 @@
 import { getCompletedMonthRange } from "./dates.js";
+import { summarizeViews, type MonthlyView } from "./metrics.js";
 import { getPageviews } from "./wikipedia.js";
 
 function getArg(name: string): string | undefined {
@@ -41,12 +42,32 @@ async function main() {
     end: range.end,
   });
 
-  const monthlyViews = items.map((item) => ({
+  const monthlyViews: MonthlyView[] = items.map((item) => ({
     month: item.timestamp.slice(0, 6),
     views: item.views,
   }));
 
+  const summary = summarizeViews(monthlyViews);
+
   console.table(monthlyViews);
+
+  console.log("\nSummary");
+  console.table({
+    totalViews: Math.round(summary.totalViews),
+    averageMonthlyViews: Math.round(summary.averageMonthlyViews),
+
+    startAverageViews: Math.round(summary.startAverageViews),
+    endAverageViews: Math.round(summary.endAverageViews),
+    growthPct: Number(summary.growthPct.toFixed(1)),
+
+    startMedianViews: Math.round(summary.startMedianViews),
+    endMedianViews: Math.round(summary.endMedianViews),
+    medianGrowthPct: Number(summary.medianGrowthPct.toFixed(1)),
+
+    growthDisagreementPct: Number(summary.growthDisagreementPct.toFixed(1)),
+    
+    signalConsistency: summary.signalConsistency,
+  });
 }
 
 main().catch((error) => {
