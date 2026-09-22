@@ -8,6 +8,10 @@ export type ChartSeries = {
 export type GenerateChartParams = {
   title: string;
   series: ChartSeries[];
+  locale?: string;
+  subtitle?: string;
+  xAxisLabel?: string;
+  yAxisLabel?: string;
 };
 
 const COLORS = [
@@ -27,7 +31,10 @@ function escapeXml(value: string): string {
     .replaceAll("'", "&apos;");
 }
 
-function formatMonth(month: string): string {
+function formatMonth(
+  month: string,
+  locale: string,
+): string {
   const normalized = String(month).replace("-", "");
 
   if (!/^\d{6}$/.test(normalized)) {
@@ -41,7 +48,7 @@ function formatMonth(month: string): string {
     return month;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     year: "numeric",
     timeZone: "UTC",
@@ -87,10 +94,14 @@ function getNiceScale(maxValue: number) {
   };
 }
 
-export function generateLineChartSvg({
-  title,
-  series,
-}: GenerateChartParams): string {
+  export function generateLineChartSvg({
+    title,
+    series,
+    locale = "uk-UA",
+    subtitle = "Щомісячні перегляди сторінки",
+    xAxisLabel = "Дата",
+    yAxisLabel = "Перегляди",
+  }: GenerateChartParams): string {
   const width = 1200;
   const height = 680;
 
@@ -201,7 +212,7 @@ export function generateLineChartSvg({
           font-size="14"
           font-weight="400"
         >
-          ${escapeXml(formatMonth(String(month)))}
+          ${escapeXml(formatMonth(String(month), locale))}
         </text>
       `;
     })
@@ -453,7 +464,7 @@ const valueLabels =
     font-size="16"
     font-weight="400"
   >
-    Monthly page views
+    ${escapeXml(subtitle)}
   </text>
 
   ${legend}
@@ -471,7 +482,7 @@ const valueLabels =
     font-size="13"
     font-weight="500"
   >
-    Date
+    ${escapeXml(xAxisLabel)}
   </text>
 
   <text
@@ -484,7 +495,7 @@ const valueLabels =
     font-size="13"
     font-weight="500"
   >
-    Views
+    ${escapeXml(yAxisLabel)}
   </text>
 
   <!-- Data -->
