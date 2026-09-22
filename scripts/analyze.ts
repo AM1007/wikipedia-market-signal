@@ -49,6 +49,52 @@ async function main() {
   
   const summary = summarizeViews(monthlyViews);
 
+  const result = {
+    project,
+    article,
+    period: {
+      months,
+      start: range.start,
+      end: range.end,
+    },
+    monthlyViews,
+    summary: {
+      totalViews: summary.totalViews,
+      averageMonthlyViews: Number(
+        summary.averageMonthlyViews.toFixed(1),
+      ),
+
+      growthPct: Number(
+        summary.growthPct.toFixed(1),
+      ),
+      medianGrowthPct: Number(
+        summary.medianGrowthPct.toFixed(1),
+      ),
+      growthDisagreementPct: Number(
+        summary.growthDisagreementPct.toFixed(1),
+      ),
+
+      signalConsistency: summary.signalConsistency,
+
+      trendDirection: summary.trendDirection,
+      trendSlopePctPerMonth: Number(
+        summary.trendSlopePctPerMonth.toFixed(2),
+      ),
+
+      volatilityPct: Number(
+        summary.volatilityPct.toFixed(1),
+      ),
+
+      outlierCount: summary.outlierCount,
+      outlierMonths: summary.outlierMonths,
+      outlierSharePct: Number(
+        summary.outlierSharePct.toFixed(1),
+      ),
+
+      signalQuality: summary.signalQuality,
+    },
+  };
+
   console.table(monthlyViews);
 
   console.log("\nSummary");
@@ -88,6 +134,9 @@ async function main() {
 
     signalQuality: summary.signalQuality,
   });
+
+  console.log("\nJSON");
+  console.log(JSON.stringify(result, null, 2));
 }
 
 main().catch((error) => {
