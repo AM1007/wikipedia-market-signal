@@ -181,8 +181,11 @@ export function renderReportHtml(
     html {
       background: var(--bg);
       color: var(--text);
+
       font-family: var(--font-text);
+
       text-rendering: optimizeLegibility;
+
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
@@ -190,6 +193,7 @@ export function renderReportHtml(
     body {
       margin: 0;
       min-height: 100vh;
+
       background:
         linear-gradient(
           180deg,
@@ -197,6 +201,10 @@ export function renderReportHtml(
           var(--bg) 320px
         );
     }
+
+    /*
+     * REPORT SURFACE
+     */
 
     .page {
       width:
@@ -222,13 +230,17 @@ export function renderReportHtml(
         hidden;
     }
 
+    .report-page-primary,
+    .report-page-secondary {
+      width: 100%;
+    }
+
     /*
      * HERO
      */
 
     .hero {
-      position:
-        relative;
+      position: relative;
 
       padding:
         72px 72px 54px;
@@ -238,23 +250,15 @@ export function renderReportHtml(
     }
 
     .hero::before {
-      content:
-        "";
+      content: "";
 
-      position:
-        absolute;
+      position: absolute;
 
-      top:
-        72px;
+      top: 72px;
+      left: 0;
 
-      left:
-        0;
-
-      width:
-        3px;
-
-      height:
-        44px;
+      width: 3px;
+      height: 44px;
 
       border-radius:
         0 3px 3px 0;
@@ -301,6 +305,9 @@ export function renderReportHtml(
 
       height:
         6px;
+
+      flex:
+        0 0 6px;
 
       border-radius:
         999px;
@@ -398,11 +405,11 @@ export function renderReportHtml(
         minmax(260px, 1.65fr)
         repeat(3, minmax(150px, 1fr));
 
-      padding:
-        0 72px;
-
       margin:
         0;
+
+      padding:
+        0 72px;
 
       border-bottom:
         1px solid var(--border-soft);
@@ -521,7 +528,7 @@ export function renderReportHtml(
     }
 
     /*
-     * CHART / VISUALIZATION
+     * CHART
      */
 
     .visual-section {
@@ -628,7 +635,10 @@ export function renderReportHtml(
         grid;
 
       grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+        repeat(
+          2,
+          minmax(0, 1fr)
+        );
 
       column-gap:
         72px;
@@ -776,6 +786,9 @@ export function renderReportHtml(
       height:
         5px;
 
+      flex:
+        0 0 5px;
+
       border-radius:
         50%;
 
@@ -816,7 +829,10 @@ export function renderReportHtml(
 
       .metrics {
         grid-template-columns:
-          repeat(2, minmax(0, 1fr));
+          repeat(
+            2,
+            minmax(0, 1fr)
+          );
 
         padding:
           0 42px;
@@ -930,9 +946,6 @@ export function renderReportHtml(
       }
 
       .metrics {
-        display:
-          grid;
-
         grid-template-columns:
           1fr 1fr;
 
@@ -1057,7 +1070,17 @@ export function renderReportHtml(
     }
 
     /*
+     * ============================================================
      * PRINT / PDF
+     *
+     * PDF intentionally uses a different layout from the browser.
+     *
+     * PAGE 1:
+     * Hero + metrics + chart
+     *
+     * PAGE 2:
+     * Analysis + footer
+     * ============================================================
      */
 
     @media print {
@@ -1066,63 +1089,591 @@ export function renderReportHtml(
           A4 landscape;
 
         margin:
-          10mm;
+          0;
       }
 
       html,
       body {
+        width:
+          297mm;
+
+        margin:
+          0;
+
+        padding:
+          0;
+
         background:
           #ffffff;
       }
 
-      body {
-        -webkit-print-color-adjust:
+      html {
+        print-color-adjust:
           exact;
 
-        print-color-adjust:
+        -webkit-print-color-adjust:
           exact;
       }
 
+      body {
+        min-height:
+          0;
+
+        background:
+          #ffffff;
+
+        print-color-adjust:
+          exact;
+
+        -webkit-print-color-adjust:
+          exact;
+      }
+
+      /*
+       * Remove browser card styling.
+       */
+
       .page {
         width:
-          100%;
+          297mm;
+
+        max-width:
+          none;
 
         margin:
           0;
+
+        padding:
+          0;
+
+        background:
+          #ffffff;
 
         border-radius:
           0;
 
         box-shadow:
           none;
+
+        overflow:
+          visible;
       }
 
-      .hero {
-        padding-top:
-          42px;
+      /*
+       * ----------------------------------------------------------
+       * PAGE 1
+       * ----------------------------------------------------------
+       */
 
-        padding-bottom:
-          36px;
+      .report-page-primary {
+        width:
+          297mm;
+
+        height:
+          210mm;
+
+        display:
+          flex;
+
+        flex-direction:
+          column;
+
+        overflow:
+          hidden;
+
+        break-after:
+          page;
+
+        page-break-after:
+          always;
+
+        background:
+          #ffffff;
+      }
+
+      /*
+       * Compact hero for PDF.
+       */
+
+      .hero {
+        flex:
+          0 0 auto;
+
+        padding:
+          10mm 18mm 6mm;
+
+        border-bottom:
+          0;
+      }
+
+      .hero::before {
+        top:
+          15mm;
+
+        left:
+          0;
+
+        width:
+          0.7mm;
+
+        height:
+          9mm;
+
+        border-radius:
+          0 1mm 1mm 0;
+      }
+
+      .eyebrow {
+        gap:
+          2mm;
+
+        margin-bottom:
+          4mm;
+
+        font-size:
+          7pt;
+
+        line-height:
+          1;
+
+        letter-spacing:
+          0.09em;
+      }
+
+      .eyebrow-dot {
+        width:
+          1.4mm;
+
+        height:
+          1.4mm;
+
+        flex-basis:
+          1.4mm;
       }
 
       h1 {
+        max-width:
+          220mm;
+
         font-size:
-          48px;
+          25pt;
+
+        line-height:
+          0.98;
+
+        letter-spacing:
+          -0.045em;
       }
+
+      .subtitle {
+        max-width:
+          215mm;
+
+        margin-top:
+          3.5mm;
+
+        font-size:
+          10pt;
+
+        line-height:
+          1.28;
+
+        letter-spacing:
+          -0.015em;
+      }
+
+      .period {
+        margin-top:
+          3.5mm;
+
+        font-size:
+          7pt;
+
+        line-height:
+          1.2;
+      }
+
+      /*
+       * Metrics stay compact and horizontal.
+       */
 
       .metrics {
+        flex:
+          0 0 auto;
+
+        grid-template-columns:
+          1.45fr
+          1fr
+          1fr
+          1fr;
+
+        margin:
+          0 18mm;
+
+        padding:
+          0;
+
+        border-top:
+          0.25mm solid var(--border);
+
+        border-bottom:
+          0.25mm solid var(--border);
+
         break-inside:
+          avoid;
+
+        page-break-inside:
           avoid;
       }
 
+      .metric {
+        padding:
+          5mm 5mm 5.5mm 0;
+      }
+
+      .metric + .metric {
+        padding-left:
+          5mm;
+
+        border-left:
+          0.25mm solid var(--border);
+      }
+
+      .metric-label {
+        margin-bottom:
+          1.5mm;
+
+        font-size:
+          6.5pt;
+
+        line-height:
+          1.2;
+
+        letter-spacing:
+          0.05em;
+      }
+
+      .metric--primary
+      .metric-value {
+        font-size:
+          23pt;
+
+        line-height:
+          0.95;
+      }
+
+      .metric--secondary
+      .metric-value {
+        font-size:
+          15pt;
+
+        line-height:
+          1;
+      }
+
+      /*
+       * Visualization consumes remaining page-1 space.
+       */
+
       .visual-section {
+        flex:
+          1 1 auto;
+
+        min-height:
+          0;
+
+        display:
+          flex;
+
+        flex-direction:
+          column;
+
+        padding:
+          5.5mm 18mm 7mm;
+
+        border-bottom:
+          0;
+
+        overflow:
+          hidden;
+
         break-inside:
           avoid;
+
+        page-break-inside:
+          avoid;
+      }
+
+      .visual-header {
+        flex:
+          0 0 auto;
+
+        gap:
+          8mm;
+
+        margin-bottom:
+          3mm;
+      }
+
+      .section-kicker {
+        font-size:
+          6.5pt;
+
+        letter-spacing:
+          0.1em;
+      }
+
+      .visual-title {
+        margin:
+          1.8mm 0 0;
+
+        font-size:
+          14pt;
+
+        line-height:
+          1.05;
+
+        letter-spacing:
+          -0.025em;
+      }
+
+      .visual-caption {
+        padding-bottom:
+          0.5mm;
+
+        font-size:
+          6.5pt;
+      }
+
+      /*
+       * Preserve SVG proportions.
+       *
+       * We intentionally make the chart slightly narrower in PDF.
+       * This avoids the graph becoming excessively tall when
+       * rendered from its original SVG aspect ratio.
+       */
+
+      .chart {
+        flex:
+          1 1 auto;
+
+        min-height:
+          0;
+
+        display:
+          flex;
+
+        align-items:
+          flex-start;
+
+        justify-content:
+          center;
+
+        width:
+          100%;
+
+        margin:
+          0;
+
+        overflow:
+          hidden;
+      }
+
+      .chart svg {
+        display:
+          block;
+
+        width:
+          198mm;
+
+        max-width:
+          100%;
+
+        height:
+          auto;
+
+        max-height:
+          105mm;
+
+        margin:
+          0 auto;
+      }
+
+      /*
+       * ----------------------------------------------------------
+       * PAGE 2
+       * ----------------------------------------------------------
+       */
+
+      .report-page-secondary {
+        width:
+          297mm;
+
+        height:
+          210mm;
+
+        display:
+          flex;
+
+        flex-direction:
+          column;
+
+        overflow:
+          hidden;
+
+        background:
+          #ffffff;
+
+        break-before:
+          page;
+
+        page-break-before:
+          always;
+      }
+
+      .insights {
+        flex:
+          1 1 auto;
+
+        min-height:
+          0;
+
+        padding:
+          18mm 18mm 8mm;
+
+        overflow:
+          hidden;
+      }
+
+      .insights > .section-kicker {
+        margin-bottom:
+          7mm;
+      }
+
+      .insights-grid {
+        display:
+          grid;
+
+        grid-template-columns:
+          repeat(
+            2,
+            minmax(0, 1fr)
+          );
+
+        column-gap:
+          16mm;
+
+        row-gap:
+          0;
+
+        margin-top:
+          0;
       }
 
       .insight {
+        grid-template-columns:
+          8mm minmax(0, 1fr);
+
+        gap:
+          4mm;
+
+        padding:
+          8mm 0 9mm;
+
+        border-top:
+          0.25mm solid var(--border);
+
         break-inside:
           avoid;
+
+        page-break-inside:
+          avoid;
+      }
+
+      .insight-index {
+        padding-top:
+          0.8mm;
+
+        font-size:
+          6.5pt;
+
+        line-height:
+          1.2;
+      }
+
+      .insight h2 {
+        margin:
+          0 0 2.5mm;
+
+        font-size:
+          14pt;
+
+        line-height:
+          1.15;
+
+        letter-spacing:
+          -0.02em;
+      }
+
+      .insight p {
+        margin:
+          0;
+
+        font-size:
+          9.5pt;
+
+        line-height:
+          1.5;
+
+        letter-spacing:
+          -0.005em;
+      }
+
+      /*
+       * Footer is pinned visually to the bottom of page 2
+       * because the secondary page is a flex column.
+       */
+
+      .footer {
+        flex:
+          0 0 auto;
+
+        margin-top:
+          auto;
+
+        padding:
+          4.5mm 18mm 6mm;
+
+        border-top:
+          0.25mm solid var(--border-soft);
+
+        font-size:
+          6.5pt;
+
+        line-height:
+          1.2;
+
+        break-inside:
+          avoid;
+
+        page-break-inside:
+          avoid;
+      }
+
+      .footer-mark {
+        gap:
+          2mm;
+      }
+
+      .footer-dot {
+        width:
+          1.2mm;
+
+        height:
+          1.2mm;
+
+        flex-basis:
+          1.2mm;
       }
     }
   </style>
@@ -1131,49 +1682,57 @@ export function renderReportHtml(
 <body>
   <main class="page">
 
-    <header class="hero">
-      <div class="eyebrow">
-        <span
-          class="eyebrow-dot"
-          aria-hidden="true"
-        ></span>
+    <div class="report-page-primary">
 
-        Аналітичний звіт
-      </div>
+      <header class="hero">
+        <div class="eyebrow">
+          <span
+            class="eyebrow-dot"
+            aria-hidden="true"
+          ></span>
 
-      <h1>
-        ${escapeHtml(data.title)}
-      </h1>
+          Аналітичний звіт
+        </div>
 
-      <div class="subtitle">
-        ${escapeHtml(data.subtitle)}
-      </div>
+        <h1>
+          ${escapeHtml(data.title)}
+        </h1>
 
-      <div class="period">
-        ${escapeHtml(data.periodLabel)}
-      </div>
-    </header>
+        <div class="subtitle">
+          ${escapeHtml(data.subtitle)}
+        </div>
 
-    ${metricsHtml}
+        <div class="period">
+          ${escapeHtml(data.periodLabel)}
+        </div>
+      </header>
 
-    ${chartHtml}
+      ${metricsHtml}
 
-    ${sectionsHtml}
+      ${chartHtml}
 
-    <footer class="footer">
-      <div class="footer-mark">
-        <span
-          class="footer-dot"
-          aria-hidden="true"
-        ></span>
+    </div>
 
-        Згенерований аналітичний звіт
-      </div>
+    <div class="report-page-secondary">
 
-      <div class="footer-period">
-        ${escapeHtml(data.periodLabel)}
-      </div>
-    </footer>
+      ${sectionsHtml}
+
+      <footer class="footer">
+        <div class="footer-mark">
+          <span
+            class="footer-dot"
+            aria-hidden="true"
+          ></span>
+
+          Згенерований аналітичний звіт
+        </div>
+
+        <div class="footer-period">
+          ${escapeHtml(data.periodLabel)}
+        </div>
+      </footer>
+
+    </div>
 
   </main>
 </body>
