@@ -53,3 +53,4 @@ export async function compareMarkets({
     targets: results,
   };
 }
+
