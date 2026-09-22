@@ -1,11 +1,11 @@
-import { getCompletedMonthRange } from "./dates.js";
-import { summarizeViews, type MonthlyView } from "./metrics.js";
-import { getPageviews } from "./wikipedia.js";
+import { analyzeArticle } from "./analysis.js";
 
 function getArg(name: string): string | undefined {
   const prefix = `--${name}=`;
 
-  const arg = process.argv.find((value) => value.startsWith(prefix));
+  const arg = process.argv.find((value) =>
+    value.startsWith(prefix),
+  );
 
   return arg?.slice(prefix.length);
 }
@@ -14,6 +14,7 @@ async function main() {
   const project = getArg("project");
   const article = getArg("article");
   const monthsArg = getArg("months");
+  const format = getArg("format") ?? "table";
 
   if (!project) {
     throw new Error(
@@ -33,69 +34,11 @@ async function main() {
     throw new Error("--months must be a positive integer");
   }
 
-  const range = getCompletedMonthRange(months);
-
-  const items = await getPageviews({
+  const result = await analyzeArticle({
     project,
     article,
-    start: range.start,
-    end: range.end,
+    months,
   });
-
-  const monthlyViews: MonthlyView[] = items.map((item) => ({
-    month: item.timestamp.slice(0, 6),
-    views: item.views,
-  }));
-  
-  const summary = summarizeViews(monthlyViews);
-
-  const result = {
-    project,
-    article,
-    period: {
-      months,
-      start: range.start,
-      end: range.end,
-    },
-    monthlyViews,
-    summary: {
-      totalViews: summary.totalViews,
-      averageMonthlyViews: Number(
-        summary.averageMonthlyViews.toFixed(1),
-      ),
-
-      growthPct: Number(
-        summary.growthPct.toFixed(1),
-      ),
-      medianGrowthPct: Number(
-        summary.medianGrowthPct.toFixed(1),
-      ),
-      growthDisagreementPct: Number(
-        summary.growthDisagreementPct.toFixed(1),
-      ),
-
-      signalConsistency: summary.signalConsistency,
-
-      trendDirection: summary.trendDirection,
-      trendSlopePctPerMonth: Number(
-        summary.trendSlopePctPerMonth.toFixed(2),
-      ),
-
-      volatilityPct: Number(
-        summary.volatilityPct.toFixed(1),
-      ),
-
-      outlierCount: summary.outlierCount,
-      outlierMonths: summary.outlierMonths,
-      outlierSharePct: Number(
-        summary.outlierSharePct.toFixed(1),
-      ),
-
-      signalQuality: summary.signalQuality,
-    },
-  };
-
-  const format = getArg("format") ?? "table";
 
   if (format === "json") {
     console.log(JSON.stringify(result, null, 2));
@@ -108,49 +51,42 @@ async function main() {
     );
   }
 
-console.table(monthlyViews);
+  console.table(result.monthlyViews);
 
-console.log("\nSummary");
-console.table({
-  totalViews: Math.round(summary.totalViews),
-  averageMonthlyViews: Math.round(summary.averageMonthlyViews),
+  console.log("\nSummary");
+  console.table({
+    totalViews: result.summary.totalViews,
+    averageMonthlyViews: result.summary.averageMonthlyViews,
 
-  startAverageViews: Math.round(summary.startAverageViews),
-  endAverageViews: Math.round(summary.endAverageViews),
-  growthPct: Number(summary.growthPct.toFixed(1)),
+    growthPct: result.summary.growthPct,
+    medianGrowthPct: result.summary.medianGrowthPct,
+    growthDisagreementPct:
+      result.summary.growthDisagreementPct,
 
-  startMedianViews: Math.round(summary.startMedianViews),
-  endMedianViews: Math.round(summary.endMedianViews),
-  medianGrowthPct: Number(summary.medianGrowthPct.toFixed(1)),
+    signalConsistency:
+      result.summary.signalConsistency,
 
-  growthDisagreementPct: Number(
-    summary.growthDisagreementPct.toFixed(1),
-  ),
+    trendDirection:
+      result.summary.trendDirection,
+    trendSlopePctPerMonth:
+      result.summary.trendSlopePctPerMonth,
 
-  signalConsistency: summary.signalConsistency,
+    volatilityPct:
+      result.summary.volatilityPct,
 
-  trendSlope: Number(summary.trendSlope.toFixed(1)),
-  trendSlopePctPerMonth: Number(
-    summary.trendSlopePctPerMonth.toFixed(2),
-  ),
-  trendDirection: summary.trendDirection,
+    outlierCount:
+      result.summary.outlierCount,
+    outlierMonths:
+      result.summary.outlierMonths.join(", ") || "none",
+    outlierSharePct:
+      result.summary.outlierSharePct,
 
-  volatilityPct: Number(
-    summary.volatilityPct.toFixed(1),
-  ),
-
-  outlierCount: summary.outlierCount,
-  outlierMonths: summary.outlierMonths.join(", ") || "none",
-  outlierSharePct: Number(
-    summary.outlierSharePct.toFixed(1),
-  ),
-
-  signalQuality: summary.signalQuality,
-});
+    signalQuality:
+      result.summary.signalQuality,
+  });
 }
 
 main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
