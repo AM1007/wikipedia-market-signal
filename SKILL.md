@@ -1,6 +1,6 @@
 ---
 name: wikipedia-market-signal
-description: Analyzes Wikipedia page-view trends across topics and language editions to help B2C product teams identify and compare audience interest. Use when a user wants to evaluate topic interest, compare languages or markets, analyze growth over time, assess signal reliability, or prepare a short research summary.
+description: Analyzes Wikipedia page-view trends across topics and language editions to help B2C product teams identify and compare audience interest. Use when a user wants to evaluate topic interest, compare languages or markets, analyze growth over time, assess signal reliability, or prepare a short research summary or shareable report.
 ---
 
 # Wikipedia Market Signal
@@ -89,13 +89,86 @@ Write user-facing conclusions in Ukrainian unless the user explicitly requests a
 
     Use them as a signal for deciding what should be researched next.
 
+## Shareable report
+
+When the user requests a shareable report, build it from the same analysis result used for the written conclusion.
+
+Do not invent new metrics for the report.
+
+1. Create a report JSON file with this structure:
+
+   ```json
+   {
+     "title": "<Ukrainian report title>",
+     "subtitle": "<short description of what the signal represents>",
+     "periodLabel": "<human-readable period>",
+     "metrics": [
+       {
+         "label": "<metric label>",
+         "value": "<metric value>"
+       }
+     ],
+     "sections": [
+       {
+         "heading": "<section heading>",
+         "body": "<concise interpretation>"
+       }
+     ]
+   }
+   ```
+
+2. Populate `metrics` only from values returned by the analysis or comparison tools.
+
+3. Populate `sections` using `references/interpretation.md`.
+
+   A useful default structure is:
+   - main finding;
+   - signal reliability;
+   - unusual observations or outliers;
+   - next validation step.
+
+4. Generate the HTML report.
+
+   With a chart:
+
+   ```bash
+   npx tsx scripts/generate-report.ts \
+     --input=output/report.json \
+     --chart=output/chart.svg \
+     --output=output/report.html
+   ```
+
+   Without a chart, omit the `--chart` argument:
+
+   ```bash
+   npx tsx scripts/generate-report.ts \
+     --input=output/report.json \
+     --output=output/report.html
+   ```
+
+5. When a PDF is requested, generate it from the HTML report:
+
+   ```bash
+   npx tsx scripts/generate-pdf.ts \
+     --input=output/report.html \
+     --output=output/report.pdf
+   ```
+
+The PDF layout is intentionally optimized as a two-page A4 landscape report:
+
+- page 1: title, period, key metrics, and chart;
+- page 2: interpretation, limitations, next steps, and footer.
+
+Treat files under `output/` as generated artifacts rather than source files.
+
 ## Follow-up requests
 
 When the user changes a period, market, language, or article assumption:
 
 - rerun only the affected analysis;
 - preserve the same methodology;
-- compare updated results against the previous assumption when useful.
+- compare updated results against the previous assumption when useful;
+- regenerate charts or reports from the updated analysis when needed.
 
 Do not silently change the selected Wikipedia article.
 
@@ -108,4 +181,6 @@ Prefer a concise, decision-oriented response containing:
 3. signal quality and limitations;
 4. recommended next validation step.
 
-When requested, create a chart or shareable report from the same underlying analysis.
+When requested, create a chart, HTML report, or PDF report from the same underlying analysis.
+
+Keep user-facing report text concise and in Ukrainian unless the user explicitly requests another language.
