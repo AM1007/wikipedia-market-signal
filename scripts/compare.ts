@@ -36,8 +36,20 @@ export async function compareMarkets({
     }),
   );
 
+  const comparison = results.map((result) => ({
+    label: result.label,
+    averageMonthlyViews: result.summary.averageMonthlyViews,
+    growthPct: result.summary.growthPct,
+    medianGrowthPct: result.summary.medianGrowthPct,
+    trendDirection: result.summary.trendDirection,
+    trendSlopePctPerMonth: result.summary.trendSlopePctPerMonth,
+    volatilityPct: result.summary.volatilityPct,
+    signalQuality: result.summary.signalQuality,
+  }));
+
   return {
     months,
+    comparison,
     targets: results,
   };
 }
