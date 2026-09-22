@@ -75,6 +75,12 @@ async function main() {
     trendSlopePctPerMonth: Number(
       summary.trendSlopePctPerMonth.toFixed(2),
     ),
+    volatilityPct: Number(
+      summary.volatilityPct.toFixed(1),
+    ),
+
+    outlierCount: summary.outlierCount,
+    outlierMonths: summary.outlierMonths.join(", ") || "none",
   });
 }
 
@@ -82,3 +88,4 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+

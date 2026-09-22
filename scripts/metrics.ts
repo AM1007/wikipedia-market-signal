@@ -23,6 +23,11 @@ export type ViewSummary = {
   trendDirection: "up" | "down" | "flat";
 
   trendSlopePctPerMonth: number;
+
+  volatilityPct: number;
+
+  outlierCount: number;
+  outlierMonths: string[];
 };
 
 export type SignalConsistency = "high" | "medium" | "low";
@@ -74,6 +79,47 @@ function calculateTrendSlope(values: number[]): number {
   return numerator / denominator;
 }
 
+function standardDeviation(values: number[]): number {
+  if (values.length === 0) {
+    throw new Error(
+      "Cannot calculate standard deviation of an empty array",
+    );
+  }
+
+  const mean = average(values);
+
+  const variance =
+    values.reduce((sum, value) => {
+      const difference = value - mean;
+
+      return sum + difference * difference;
+    }, 0) / values.length;
+
+  return Math.sqrt(variance);
+}
+
+function percentile(
+  values: number[],
+  percentile: number,
+): number {
+  const sorted = [...values].sort((a, b) => a - b);
+
+  const index = (sorted.length - 1) * percentile;
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+
+  if (lower === upper) {
+    return sorted[lower]!;
+  }
+
+  const weight = index - lower;
+
+  return (
+    sorted[lower]! * (1 - weight) +
+    sorted[upper]! * weight
+  );
+}
+
 export function summarizeViews(
   monthlyViews: MonthlyView[],
 ): ViewSummary {
@@ -91,6 +137,29 @@ export function summarizeViews(
   );
 
   const averageMonthlyViews = average(views);
+
+  const volatilityPct =
+  (standardDeviation(views) / averageMonthlyViews) * 100;
+
+  const q1 = percentile(views, 0.25);
+  const q3 = percentile(views, 0.75);
+
+  const iqr = q3 - q1;
+
+  const lowerBound = q1 - 1.5 * iqr;
+  const upperBound = q3 + 1.5 * iqr;
+
+  const outliers = monthlyViews.filter(
+    (item) =>
+      item.views < lowerBound ||
+      item.views > upperBound,
+  );
+
+  const outlierCount = outliers.length;
+
+  const outlierMonths = outliers.map(
+    (item) => item.month,
+  );
 
   const startAverageViews = average(
     views.slice(0, 3),
@@ -147,8 +216,6 @@ export function summarizeViews(
     trendDirection = "flat";
   }
 
-
-
   return {
     totalViews,
     averageMonthlyViews,
@@ -163,5 +230,8 @@ export function summarizeViews(
     trendSlope,
     trendDirection,
     trendSlopePctPerMonth,
+    volatilityPct,
+    outlierCount,
+    outlierMonths,
   };
 }
