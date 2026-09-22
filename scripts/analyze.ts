@@ -81,6 +81,12 @@ async function main() {
 
     outlierCount: summary.outlierCount,
     outlierMonths: summary.outlierMonths.join(", ") || "none",
+
+    outlierSharePct: Number(
+      summary.outlierSharePct.toFixed(1),
+    ),
+
+    signalQuality: summary.signalQuality,
   });
 }
 
@@ -88,4 +94,3 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-

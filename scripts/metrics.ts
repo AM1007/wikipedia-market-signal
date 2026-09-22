@@ -28,9 +28,14 @@ export type ViewSummary = {
 
   outlierCount: number;
   outlierMonths: string[];
+
+  outlierSharePct: number;
+  signalQuality: SignalQuality;
 };
 
 export type SignalConsistency = "high" | "medium" | "low";
+
+export type SignalQuality = "high" | "medium" | "low";
 
 function average(values: number[]): number {
   if (values.length === 0) {
@@ -157,6 +162,9 @@ export function summarizeViews(
 
   const outlierCount = outliers.length;
 
+  const outlierSharePct =
+  (outlierCount / monthlyViews.length) * 100;
+  
   const outlierMonths = outliers.map(
     (item) => item.month,
   );
@@ -201,6 +209,26 @@ export function summarizeViews(
     signalConsistency = "low";
   }
 
+  let signalQuality: SignalQuality;
+
+  if (
+    monthlyViews.length >= 12 &&
+    signalConsistency === "high" &&
+    volatilityPct <= 40 &&
+    outlierSharePct <= 10
+  ) {
+    signalQuality = "high";
+  } else if (
+    monthlyViews.length >= 6 &&
+    signalConsistency !== "low" &&
+    volatilityPct <= 70 &&
+    outlierSharePct <= 25
+  ) {
+    signalQuality = "medium";
+  } else {
+    signalQuality = "low";
+  }
+
   const trendSlope = calculateTrendSlope(views);
 
   const trendSlopePctPerMonth =
@@ -233,5 +261,7 @@ export function summarizeViews(
     volatilityPct,
     outlierCount,
     outlierMonths,
+    outlierSharePct,
+    signalQuality,
   };
 }
