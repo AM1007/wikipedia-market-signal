@@ -95,48 +95,58 @@ async function main() {
     },
   };
 
-  console.table(monthlyViews);
+  const format = getArg("format") ?? "table";
 
-  console.log("\nSummary");
-  console.table({
-    totalViews: Math.round(summary.totalViews),
-    averageMonthlyViews: Math.round(summary.averageMonthlyViews),
+  if (format === "json") {
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
 
-    startAverageViews: Math.round(summary.startAverageViews),
-    endAverageViews: Math.round(summary.endAverageViews),
-    growthPct: Number(summary.growthPct.toFixed(1)),
+  if (format !== "table") {
+    throw new Error(
+      "--format must be either 'table' or 'json'",
+    );
+  }
 
-    startMedianViews: Math.round(summary.startMedianViews),
-    endMedianViews: Math.round(summary.endMedianViews),
-    medianGrowthPct: Number(summary.medianGrowthPct.toFixed(1)),
+console.table(monthlyViews);
 
-    growthDisagreementPct: Number(
-      summary.growthDisagreementPct.toFixed(1)
-    ),
-    
-    signalConsistency: summary.signalConsistency,
+console.log("\nSummary");
+console.table({
+  totalViews: Math.round(summary.totalViews),
+  averageMonthlyViews: Math.round(summary.averageMonthlyViews),
 
-    trendSlope: Number(summary.trendSlope.toFixed(1)),
-    trendDirection: summary.trendDirection,
-    trendSlopePctPerMonth: Number(
-      summary.trendSlopePctPerMonth.toFixed(2),
-    ),
-    volatilityPct: Number(
-      summary.volatilityPct.toFixed(1),
-    ),
+  startAverageViews: Math.round(summary.startAverageViews),
+  endAverageViews: Math.round(summary.endAverageViews),
+  growthPct: Number(summary.growthPct.toFixed(1)),
 
-    outlierCount: summary.outlierCount,
-    outlierMonths: summary.outlierMonths.join(", ") || "none",
+  startMedianViews: Math.round(summary.startMedianViews),
+  endMedianViews: Math.round(summary.endMedianViews),
+  medianGrowthPct: Number(summary.medianGrowthPct.toFixed(1)),
 
-    outlierSharePct: Number(
-      summary.outlierSharePct.toFixed(1),
-    ),
+  growthDisagreementPct: Number(
+    summary.growthDisagreementPct.toFixed(1),
+  ),
 
-    signalQuality: summary.signalQuality,
-  });
+  signalConsistency: summary.signalConsistency,
 
-  console.log("\nJSON");
-  console.log(JSON.stringify(result, null, 2));
+  trendSlope: Number(summary.trendSlope.toFixed(1)),
+  trendSlopePctPerMonth: Number(
+    summary.trendSlopePctPerMonth.toFixed(2),
+  ),
+  trendDirection: summary.trendDirection,
+
+  volatilityPct: Number(
+    summary.volatilityPct.toFixed(1),
+  ),
+
+  outlierCount: summary.outlierCount,
+  outlierMonths: summary.outlierMonths.join(", ") || "none",
+  outlierSharePct: Number(
+    summary.outlierSharePct.toFixed(1),
+  ),
+
+  signalQuality: summary.signalQuality,
+});
 }
 
 main().catch((error) => {
