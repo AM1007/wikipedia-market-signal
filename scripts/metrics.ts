@@ -18,6 +18,11 @@ export type ViewSummary = {
   growthDisagreementPct: number;
 
   signalConsistency: SignalConsistency;
+
+  trendSlope: number;
+  trendDirection: "up" | "down" | "flat";
+
+  trendSlopePctPerMonth: number;
 };
 
 export type SignalConsistency = "high" | "medium" | "low";
@@ -43,6 +48,30 @@ function median(values: number[]): number {
   }
 
   return sorted[middle]!;
+}
+
+function calculateTrendSlope(values: number[]): number {
+  const n = values.length;
+
+  const xMean = (n - 1) / 2;
+  const yMean = average(values);
+
+  let numerator = 0;
+  let denominator = 0;
+
+  for (let i = 0; i < n; i++) {
+    const xDiff = i - xMean;
+    const yDiff = values[i]! - yMean;
+
+    numerator += xDiff * yDiff;
+    denominator += xDiff * xDiff;
+  }
+
+  if (denominator === 0) {
+    return 0;
+  }
+
+  return numerator / denominator;
 }
 
 export function summarizeViews(
@@ -103,6 +132,23 @@ export function summarizeViews(
     signalConsistency = "low";
   }
 
+  const trendSlope = calculateTrendSlope(views);
+
+  const trendSlopePctPerMonth =
+    (trendSlope / averageMonthlyViews) * 100;
+
+  let trendDirection: "up" | "down" | "flat";  
+
+  if (trendSlope > 0) {
+    trendDirection = "up";
+  } else if (trendSlope < 0) {
+    trendDirection = "down";
+  } else {
+    trendDirection = "flat";
+  }
+
+
+
   return {
     totalViews,
     averageMonthlyViews,
@@ -114,5 +160,8 @@ export function summarizeViews(
     medianGrowthPct,
     growthDisagreementPct,
     signalConsistency,
+    trendSlope,
+    trendDirection,
+    trendSlopePctPerMonth,
   };
 }

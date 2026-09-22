@@ -46,7 +46,7 @@ async function main() {
     month: item.timestamp.slice(0, 6),
     views: item.views,
   }));
-
+  
   const summary = summarizeViews(monthlyViews);
 
   console.table(monthlyViews);
@@ -64,9 +64,17 @@ async function main() {
     endMedianViews: Math.round(summary.endMedianViews),
     medianGrowthPct: Number(summary.medianGrowthPct.toFixed(1)),
 
-    growthDisagreementPct: Number(summary.growthDisagreementPct.toFixed(1)),
+    growthDisagreementPct: Number(
+      summary.growthDisagreementPct.toFixed(1)
+    ),
     
     signalConsistency: summary.signalConsistency,
+
+    trendSlope: Number(summary.trendSlope.toFixed(1)),
+    trendDirection: summary.trendDirection,
+    trendSlopePctPerMonth: Number(
+      summary.trendSlopePctPerMonth.toFixed(2),
+    ),
   });
 }
 
