@@ -201,32 +201,11 @@ async function executeTool(call: ToolCall) {
   );
 }
 
-async function main() {
-  const skill = await readFile("SKILL.md", "utf8");
-  const interpretation = await readFile(
-    "references/interpretation.md",
-    "utf8",
-  );
-
-  const messages: Message[] = [
-    {
-      role: "system",
-      content: [
-        skill,
-        "",
-        "# Interpretation reference",
-        interpretation,
-        "",
-        "Use the provided tools instead of inventing Wikipedia article titles or page-view data.",
-        "When comparing multiple markets, search for the correct article in each market first, then call compare_markets directly. Do not call analyze_article for those same targets beforehand.",
-      ].join("\n"),
-    },
-    {
-      role: "user",
-      content:
-      "Ми досліджуємо тему астрономії для B2C освітнього продукту. Порівняй інтерес до цієї теми в польській та чеській Вікіпедії за останні 12 завершених місяців. Спочатку знайди відповідні статті в кожній мовній версії, а потім порівняй їх без оголошення абсолютного «переможця».",
-    },
-  ];
+async function runAgentTurn(
+  messages: Message[],
+  label: string,
+) {
+  console.log(`\n=== ${label} ===`);
 
   for (let step = 0; step < 6; step += 1) {
     const data = await callModel(messages);
@@ -263,7 +242,52 @@ async function main() {
   }
 
   throw new Error(
-    "Agent exceeded maximum tool-calling steps",
+    `Agent exceeded maximum tool-calling steps during ${label}`,
+  );
+}
+
+async function main() {
+  const skill = await readFile("SKILL.md", "utf8");
+  const interpretation = await readFile(
+    "references/interpretation.md",
+    "utf8",
+  );
+
+  const messages: Message[] = [
+    {
+      role: "system",
+      content: [
+        skill,
+        "",
+        "# Interpretation reference",
+        interpretation,
+        "",
+        "Use the provided tools instead of inventing Wikipedia article titles or page-view data.",
+        "When comparing multiple markets, search for the correct article in each market first, then call compare_markets directly. Do not call analyze_article for those same targets beforehand.",
+        "For follow-up requests, reuse article selections already established in the conversation unless the user asks to change the topic or article.",
+      ].join("\n"),
+    },
+    {
+      role: "user",
+      content:
+        "Ми досліджуємо тему астрономії для B2C освітнього продукту. Порівняй інтерес до цієї теми в польській та чеській Вікіпедії за останні 12 завершених місяців. Спочатку знайди відповідні статті в кожній мовній версії, а потім порівняй їх без оголошення абсолютного «переможця».",
+    },
+  ];
+
+  await runAgentTurn(
+    messages,
+    "Initial 12-month comparison",
+  );
+
+  messages.push({
+    role: "user",
+    content:
+      "А тепер повтори це саме порівняння лише за останні 6 завершених місяців. Використай ті самі статті.",
+  });
+
+  await runAgentTurn(
+    messages,
+    "Follow-up 6-month comparison",
   );
 }
 
