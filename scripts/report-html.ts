@@ -9,6 +9,46 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
+function formatPeriodLabel(value: string): string {
+  const match = value
+    .trim()
+    .match(/^(\d{4})(\d{2})\s*[—-]\s*(\d{4})(\d{2})$/);
+
+  if (!match) {
+    return value;
+  }
+
+  const startYear = match[1]!;
+  const startMonth = match[2]!;
+  const endYear = match[3]!;
+  const endMonth = match[4]!;
+
+  const formatter = new Intl.DateTimeFormat("uk-UA", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
+  const formatMonth = (
+    year: string,
+    month: string,
+  ): string =>
+    formatter.format(
+      new Date(
+        Date.UTC(
+          Number(year),
+          Number(month) - 1,
+          1,
+        ),
+      ),
+    );
+
+  return `${formatMonth(startYear, startMonth)} — ${formatMonth(
+    endYear,
+    endMonth,
+  )}`;
+}
+
 function renderMetrics(
   metrics: ReportData["metrics"],
 ): string {
@@ -94,6 +134,9 @@ export function renderReportHtml(
 ): string {
   const metricsHtml = renderMetrics(data.metrics);
   const sectionsHtml = renderSections(data.sections);
+  const displayPeriodLabel = formatPeriodLabel(
+    data.periodLabel,
+  );
 
   const chartHtml = data.chartSvg
     ? `
@@ -113,7 +156,7 @@ export function renderReportHtml(
           </div>
 
           <div class="visual-caption">
-            ${escapeHtml(data.periodLabel)}
+            ${escapeHtml(displayPeriodLabel)}
           </div>
         </div>
 
@@ -391,6 +434,9 @@ export function renderReportHtml(
 
       letter-spacing:
         0.01em;
+
+      white-space:
+        nowrap;
     }
 
     /*
@@ -419,6 +465,12 @@ export function renderReportHtml(
       min-width:
         0;
 
+      display:
+        flex;
+
+      flex-direction:
+        column;
+
       padding:
         44px 28px 46px 0;
     }
@@ -432,6 +484,9 @@ export function renderReportHtml(
     }
 
     .metric-label {
+      min-height:
+        2.6em;
+
       margin-bottom:
         11px;
 
@@ -594,6 +649,9 @@ export function renderReportHtml(
 
       font-weight:
         500;
+
+      white-space:
+        nowrap;
     }
 
     .chart {
@@ -794,6 +852,11 @@ export function renderReportHtml(
 
       background:
         var(--accent);
+    }
+
+    .footer-period {
+      white-space:
+        nowrap;
     }
 
     /*
@@ -1061,6 +1124,13 @@ export function renderReportHtml(
 
         padding:
           20px 24px 28px;
+      }
+
+      .period,
+      .visual-caption,
+      .footer-period {
+        white-space:
+          normal;
       }
 
       .footer-period {
@@ -1340,6 +1410,9 @@ export function renderReportHtml(
       }
 
       .metric-label {
+        min-height:
+          2.4em;
+
         margin-bottom:
           1.5mm;
 
@@ -1703,7 +1776,7 @@ export function renderReportHtml(
         </div>
 
         <div class="period">
-          ${escapeHtml(data.periodLabel)}
+          ${escapeHtml(displayPeriodLabel)}
         </div>
       </header>
 
@@ -1728,7 +1801,7 @@ export function renderReportHtml(
         </div>
 
         <div class="footer-period">
-          ${escapeHtml(data.periodLabel)}
+          ${escapeHtml(displayPeriodLabel)}
         </div>
       </footer>
 
