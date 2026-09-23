@@ -5,6 +5,8 @@ import { readFile } from "node:fs/promises";
 import { analyzeArticle } from "./analysis.js";
 import { searchWikipedia } from "./search.js";
 
+import { compareMarkets } from "./compare.js";
+
 const apiKey = process.env.OPENROUTER_API_KEY;
 
 if (!apiKey) {
@@ -80,6 +82,43 @@ const tools = [
       },
     },
   },
+  {
+  type: "function",
+  function: {
+    name: "compare_markets",
+    description:
+    "Compare Wikipedia page-view signals for multiple exact articles across language editions using the same completed-month period. This tool already analyzes each target internally, so do not call analyze_article for the same targets before calling compare_markets.",
+    parameters: {
+      type: "object",
+      properties: {
+        months: {
+          type: "integer",
+          minimum: 6,
+        },
+        targets: {
+          type: "array",
+          minItems: 2,
+          items: {
+            type: "object",
+            properties: {
+              label: {
+                type: "string",
+              },
+              project: {
+                type: "string",
+              },
+              article: {
+                type: "string",
+              },
+            },
+            required: ["label", "project", "article"],
+          },
+        },
+      },
+      required: ["months", "targets"],
+    },
+  },
+  },
 ];
 
 async function callModel(messages: Message[]) {
@@ -140,6 +179,23 @@ async function executeTool(call: ToolCall) {
     });
   }
 
+  if (call.function.name === "compare_markets") {
+    return compareMarkets({
+      months: Number(args.months),
+      targets: Array.isArray(args.targets)
+        ? args.targets.map((target) => {
+            const item = target as Record<string, unknown>;
+
+            return {
+              label: String(item.label),
+              project: String(item.project),
+              article: String(item.article),
+            };
+          })
+        : [],
+    });
+  }
+
   throw new Error(
     `Unknown tool: ${call.function.name}`,
   );
@@ -162,12 +218,13 @@ async function main() {
         interpretation,
         "",
         "Use the provided tools instead of inventing Wikipedia article titles or page-view data.",
+        "When comparing multiple markets, search for the correct article in each market first, then call compare_markets directly. Do not call analyze_article for those same targets beforehand.",
       ].join("\n"),
     },
     {
       role: "user",
       content:
-        "Ми думаємо додати курс з астрономії до освітнього застосунку. Чи зростає інтерес до цієї теми в україномовній Вікіпедії за останні 12 завершених місяців?",
+      "Ми досліджуємо тему астрономії для B2C освітнього продукту. Порівняй інтерес до цієї теми в польській та чеській Вікіпедії за останні 12 завершених місяців. Спочатку знайди відповідні статті в кожній мовній версії, а потім порівняй їх без оголошення абсолютного «переможця».",
     },
   ];
 
